@@ -32,12 +32,9 @@ class FFMpegHelper {
       String appName = packageInfo.appName;
       Directory tempDir = await getTemporaryDirectory();
       _tempFolderPath = path.join(tempDir.path, "ffmpeg");
-      Directory ffmpegInstallDir =
-          ffmpegBaseDir ?? await getApplicationDocumentsDirectory();
-      _ffmpegInstallationPath =
-          path.join(ffmpegInstallDir.path, appName, "ffmpeg");
-      _ffmpegBinDirectory = path.join(
-          _ffmpegInstallationPath!, "ffmpeg-master-latest-win64-gpl", "bin");
+      Directory ffmpegInstallDir = ffmpegBaseDir ?? await getApplicationDocumentsDirectory();
+      _ffmpegInstallationPath = path.join(ffmpegInstallDir.path, appName, "ffmpeg");
+      _ffmpegBinDirectory = path.join(_ffmpegInstallationPath!, "ffmpeg-master-latest-win64-gpl", "bin");
     }
   }
 
@@ -198,14 +195,11 @@ class FFMpegHelper {
             double.tryParse(temp['fps']) ?? 0.0,
             double.tryParse(temp['stream_0_0_q']) ?? 0.0,
             int.tryParse(temp['total_size']) ?? 0,
-            int.tryParse(temp['out_time_us']) ?? 0,
+            double.tryParse(temp['out_time_us']) ?? 0.0,
             // 2189.6kbits/s => 2189.6
-            double.tryParse(
-                    temp['bitrate']?.replaceAll(RegExp('[a-z/]'), '')) ??
-                0.0,
+            double.tryParse(temp['bitrate']?.replaceAll(RegExp('[a-z/]'), '')) ?? 0.0,
             // 2.15x => 2.15
-            double.tryParse(temp['speed']?.replaceAll(RegExp('[a-z/]'), '')) ??
-                0.0,
+            double.tryParse(temp['speed']?.replaceAll(RegExp('[a-z/]'), '')) ?? 0.0,
           ));
         } catch (e) {
           if (kDebugMode) {
@@ -275,8 +269,7 @@ class FFMpegHelper {
   Future<MediaInformation?> _runProbeOnNonWindows(String filePath) async {
     Completer<MediaInformation?> completer = Completer<MediaInformation?>();
     try {
-      await FFprobeKit.getMediaInformationAsync(filePath,
-          (MediaInformationSession session) async {
+      await FFprobeKit.getMediaInformationAsync(filePath, (MediaInformationSession session) async {
         final MediaInformation? information = session.getMediaInformation();
         if (information != null) {
           if (!completer.isCompleted) {
@@ -311,9 +304,7 @@ class FFMpegHelper {
       '-show_chapters',
       filePath,
     ]);
-    if (result.stdout == null ||
-        result.stdout is! String ||
-        (result.stdout as String).isEmpty) {
+    if (result.stdout == null || result.stdout is! String || (result.stdout as String).isEmpty) {
       return null;
     }
     if (result.exitCode == ReturnCode.success) {
